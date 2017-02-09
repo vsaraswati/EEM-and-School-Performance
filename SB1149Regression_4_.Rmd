@@ -1,0 +1,323 @@
+---
+title: "OregonSchools"
+output: pdf_document
+---
+
+Load Libraries
+If libraries are not recognized, install packages first.
+
+install.packages("dplyr")
+install.packages("stringr")
+
+```{r}
+
+library(stringr)
+library(base)
+library(dplyr)
+
+
+```
+
+Load dataframes for School performance from 2002-2016. The name for each dataframe is "Schoolxx" where xx is the last 2 digits of the ending academic year from which the data is for. 
+
+```{r}
+Schools16 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/17/RCmediaSchoolsAggregate.csv")
+Schools15 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/16/RCmediaSchoolsAggregate.csv")
+Schools14 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/15/RCmediaSchoolsAggregate.csv")
+Schools13 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/14/RCmediaSchoolsAggregate.csv")
+Schools12 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/13/RCmediaSchoolsAggregate.csv")
+Schools11 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/12/RCmediaSchoolsAggregate.csv")
+Schools10 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/11/RCmediaSchoolsAggregate.csv")
+Schools09 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/10/RCmediaSchoolsAggregate.csv")
+Schools08 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/09/RCmediaSchools.csv")
+Schools07 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/08/RCmediaSchools.csv")
+Schools06 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/07/RCmediaSchools.csv")
+Schools05 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/06/RCmediaSchools.csv")
+Schools04 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/05/RCmediaSchools.csv")
+Schools03 <- read.csv("http://www.ode.state.or.us/data/reportcard/media/04/RCmedia.csv")
+
+
+```
+
+
+Load dataframes for EEMs and list of eligible schools. Keep only relevant columns and rename them for consistency. 
+
+EEM1 contains only elementary and middle schools that have implemented EEMs and the year those implementation took place. The "Year" column should be a factor and not numeric.
+
+SB1149 contains a list of schoolIDs of all schools that are eligible for the program (elementary to high schools). Not all schools within this list have implemented EEMs.
+
+
+```{r}
+EEM <- read.csv("https://drive.google.com/uc?export=download&id=0BwRfzi9aVM4HaGRVYXlaVFVBYlE")
+EligibleSchools <- read.csv("https://drive.google.com/uc?export=download&id=0BwRfzi9aVM4HY0pnU1JOcTBWaDA")
+
+EEM1 <- EEM  %>% subset(, c("FacilityName", "FacilityODEId", "MeasureClassDescription", "MeasureClassDetailDescription", "ImplementedYear"))
+EEM2 <- EEM %>% subset(,c("FacilityName", "FacilityODEId", "ImplementedYear"))
+
+SB1149 <- subset(EligibleSchools, SB.1149.Eligibility %in% c("YES"))
+SB1149 <- SB1149 %>% subset(, c("School.ID"))
+
+
+names(EEM1) <- c("SchoolName", "SchoolID", "EEMType", "EEMDetail", "Year")
+names(EEM2) <- c("SchoolName", "SchoolID", "Year")
+names(SB1149) <- c("SchoolID")
+
+EEM1$Year <- as.factor(EEM1$Year)
+
+```
+
+
+Keep only relevant Columns for each dataframe such as school ID number, name, type, total enrollment, and percent of student who pass the subject each academic year. 
+
+These smaller dataframes are named "Pxx" where xx is the last 2 digits of the ending academic year from which the data is for.
+
+```{r}
+
+
+P16 <- Schools16 %>% subset(, c("School.ID","School.Name", "School.Type", "Total.Enrollment", "Math.Pct.Met.2015.16"))
+
+P15 <- Schools15 %>% subset(, c("School.ID", "School.Name", "School.Type", "Total.Enrollment", "Math.Pct.Met.2014.15"))
+
+P14 <- Schools14 %>% subset(, c("School.ID", "School.Name", "School.Type","Total.Enrollment" , "Math.Pct.Met.2013.14"))
+
+P13 <- Schools13 %>% subset(, c("School.ID", "School.Name", "School.Type", "Total.Enrollment" , "Math.Pct.Met.2012.13"))
+
+P12 <- Schools12 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1","MathCompSchoolAllGradePct" ))
+
+P11 <- Schools11 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct" ))
+
+P10 <- Schools10 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct"))
+
+P09 <- Schools09 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct"))
+
+P08 <- Schools08 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct" ))
+
+P07 <- Schools07 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct"))
+
+P06 <- Schools06 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct"))
+
+P05 <- Schools05 %>% subset(, c("InstID", "InstNm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct"))
+
+P04 <- Schools04 %>% subset(, c( "instid", "instnm", "SchoolType", "DailyMmbrshpAvgAmt1", "MathPSCompSchoolAllGradePct"))
+
+P03 <- Schools03 %>% subset(,c("instid", "instnm", "DailyMmbrshpAvgAmt1", "MathCompSchoolAllGradePct"))
+
+```
+
+
+Rename the columns in each dataframe For consistency
+
+
+```{r}
+
+names(P16) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P15) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P14) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P13) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P12) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P11) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P10) <- c("SchoolID" ,"SchoolName", "SchoolType", "Enrollment", "Math")
+names(P09) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P08) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P07) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P06) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P05) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P04) <- c("SchoolID", "SchoolName", "SchoolType", "Enrollment", "Math")
+names(P03) <- c("SchoolID", "SchoolName", "Enrollment", "Math")
+
+```
+
+Create a new column called "Year" for each dataframes which indicates the end of the academic year.
+
+
+```{r}
+
+P16$Year <- as.factor(2016)
+P15$Year <- as.factor(2015)
+P14$Year <- as.factor(2014)
+P13$Year <- as.factor(2013)
+P12$Year <- as.factor(2012)
+P11$Year <- as.factor(2011)
+P10$Year <- as.factor(2010)
+P09$Year <- as.factor(2009)
+P08$Year <- as.factor(2008)
+P07$Year <- as.factor(2007)
+P06$Year <- as.factor(2006)
+P05$Year <- as.factor(2005)
+P04$Year <- as.factor(2004)
+P03$Year <- as.factor(2003)
+
+```
+
+
+Convert "Enrollment" and "Math" columns from factors into numerics. Some rows in the Math columns contain characters such as * or -- when information is unavailable. These rows are coerced into NA's when the column is converted into numerics. 
+
+Data from 2008 and before contains the % character which should be removed before converting the factors to numerics.   
+
+
+```{r}
+
+P16$Enrollment <- as.numeric(as.character(P16$Enrollment))
+P15$Enrollment <- as.numeric(as.character(P15$Enrollment))
+P14$Enrollment <- as.numeric(as.character(P14$Enrollment))
+P13$Enrollment <- as.numeric(as.character(P13$Enrollment))
+P12$Enrollment <- as.numeric(as.character(P12$Enrollment))
+P11$Enrollment <- as.numeric(as.character(P11$Enrollment))
+P10$Enrollment <- as.numeric(as.character(P10$Enrollment))
+P09$Enrollment <- as.numeric(as.character(P09$Enrollment))
+P08$Enrollment <- as.numeric(as.character(P08$Enrollment))
+P07$Enrollment <- as.numeric(as.character(P07$Enrollment))
+P06$Enrollment <- as.numeric(as.character(P06$Enrollment))
+P05$Enrollment <- as.numeric(as.character(P05$Enrollment))
+P04$Enrollment <- as.numeric(as.character(P04$Enrollment))
+P03$Enrollment <- as.numeric(as.character(P03$Enrollment))
+
+P16$Math <- as.numeric(as.character(P16$Math))
+P15$Math <- as.numeric(as.character(P15$Math))
+P14$Math <- as.numeric(as.character(P14$Math))
+P13$Math <- as.numeric(as.character(P13$Math))
+P12$Math <- as.numeric(as.character(P12$Math))
+P11$Math <- as.numeric(as.character(P11$Math))
+P10$Math <- as.numeric(as.character(P10$Math))
+P09$Math <- as.numeric(as.character(P09$Math))
+P08$Math <- as.numeric(gsub("%", "", as.character(P08$Math)))
+P07$Math <- as.numeric(gsub("%", "", as.character(P07$Math))) 
+P06$Math <- as.numeric(gsub("%", "", as.character(P06$Math)))
+P05$Math <- as.numeric(gsub("%", "", as.character(P05$Math)))
+P04$Math <- as.numeric(gsub("%", "", as.character(P04$Math)))
+P03$Math <- as.numeric(gsub("%", "", as.character(P03$Math)))
+
+
+```
+
+Merge each annual school performance data frame (P016-P03) with SB1149 to eliminate schools that are not eligible for the SB1149 progam.
+
+```{r}
+
+M16 <- merge(SB1149, P16, by = "SchoolID")
+M15 <- merge(SB1149, P15, by = "SchoolID")
+M14 <- merge(SB1149, P14, by = "SchoolID")
+M13 <- merge(SB1149, P13, by = "SchoolID")
+M12 <- merge(SB1149, P12, by = "SchoolID")
+M11 <- merge(SB1149, P11, by = "SchoolID")
+M10 <- merge(SB1149, P10, by = "SchoolID")
+M09 <- merge(SB1149, P09, by = "SchoolID")
+M08 <- merge(SB1149, P08, by = "SchoolID")
+M07 <- merge(SB1149, P07, by = "SchoolID")
+M06 <- merge(SB1149, P06, by = "SchoolID")
+M05 <- merge(SB1149, P05, by = "SchoolID")
+M04 <- merge(SB1149, P04, by = "SchoolID")
+M03 <- merge(SB1149, P03, by = "SchoolID")
+
+```
+
+
+Filter out all the high schools. Only keep rows with either "E" or "M" in the SchoolType Column. P03 does not have a SchoolType column and cannot be filtered using the same method. High schools in P03 can be filtered out later after it is combined with the EEM school list which only contains elementary and middle schools.
+
+
+```{r}
+M16 <- subset(M16, SchoolType %in% c("E","M"))
+M15 <- subset(M15, SchoolType %in% c("E","M"))
+M14 <- subset(M14, SchoolType %in% c("E","M"))
+M13 <- subset(M13, SchoolType %in% c("E","M"))
+M12 <- subset(M12, SchoolType %in% c("E","M"))
+M11 <- subset(M11, SchoolType %in% c("E","M"))
+M10 <- subset(M10, SchoolType %in% c("E","M"))
+M09 <- subset(M09, SchoolType %in% c("E","M"))
+M08 <- subset(M08, SchoolType %in% c("E","M"))
+M07 <- subset(M07, SchoolType %in% c("E","M"))
+M06 <- subset(M06, SchoolType %in% c("E","M"))
+M05 <- subset(M05, SchoolType %in% c("E","M"))
+M04 <- subset(M04, SchoolType %in% c("E","M"))
+
+```
+
+Combine dataframes for each year into one single dataframe. Bind them vertically, excluding P03 because it has less number of columns.
+
+```{r}
+
+B04 <- rbind(M04, M05)
+B05 <- rbind(B04, M06)
+B06 <- rbind(B05, M07)
+B07 <- rbind(B06, M08)
+B08 <- rbind(B07, M09)
+B09 <- rbind(B08, M10)
+B10 <- rbind(B09, M11)
+B11 <- rbind(B10, M12)
+B12 <- rbind(B11, M13)
+B13 <- rbind(B12, M14)
+B14 <- rbind(B13, M15)
+B15 <- rbind(B14, M16)
+
+
+```
+
+Create a new dataframe called "SchoolPerformance" that sorts through the columns "SchoolID" and "Year" then lists them in ascending order. Plot the data (Math on vertical Year on horizontal)
+
+```{r}
+
+StudentPerformance <- B15[order(B15$SchoolID, B15$Year),]
+plot(Math ~ Year, data = StudentPerformance)
+
+boxplot(Math ~ Year, data = StudentPerformance, notch=TRUE)
+
+```
+
+At the moment, we're only interested in knowing whether or not a school that is eligible has implemented EEMs or not and what year it was implemented. We don't want to specify the type of EEMs they implemented quite yet.
+
+EEM2 contains only SchoolID, SchoolName and Year. It's a list of only the elementary and middle schools that have implemented EEMs and the year that took place. 
+
+EEM3 is a subset of EEM2 and consists of only SchoolID and the year EEMs were implemented at those schools (as numeric not factor).
+
+Create a new dataframe called PerformanceEEM by doing a left join between the dataframes StudentPerformance and EEM3 according to SchoolID. 
+
+```{r}
+
+#Remove any duplicate rows in EEM2 
+EEM2 <- unique(EEM2)
+
+
+EEM2$ImplementYear <- as.numeric(EEM2$Year)
+
+EEM3 <- EEM2 %>% subset(,c("SchoolID","ImplementYear"))
+
+PerformanceEEM <- left_join(StudentPerformance, EEM3, by = "SchoolID")
+
+#create new column in PerformanceEEM for numeric academic years
+
+PerformanceEEM$NumericYear <- as.numeric(as.character(PerformanceEEM$Year))
+
+```
+
+Create column in PerformanceEEM that returns "Y" if EEMs were implemented at that school for that year and all subsequent years. Returns "N" for years before EEMs were implemented or if the school did not implement EEMs at all.
+
+```{r}
+
+PerformanceEEM$ImplementedEEM <- ifelse(is.na(PerformanceEEM$ImplementYear) ,"N", "Y")
+
+
+```
+
+
+Plot
+
+```{r}
+
+boxplot(Math ~ ImplementedEEM+Year, data = PerformanceEEM, notch=TRUE)
+
+```
+
+
+Regression
+
+```{r}
+
+
+Regression1 <- lm(formula = Math ~ Year+ImplementedEEM, data = PerformanceEEM)
+
+summary(Regression1)
+
+
+```
+
+
